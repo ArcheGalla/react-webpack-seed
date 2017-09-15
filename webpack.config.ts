@@ -1,7 +1,10 @@
 import * as webpack from 'webpack';
 import * as path from 'path';
+import {getPlugins} from './webpack/plugins';
 
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+
+const env:string = process.env.NODE_ENV;
 
 const config: webpack.Configuration = {
     entry: {
@@ -10,7 +13,7 @@ const config: webpack.Configuration = {
     },
     output: {
         path: path.resolve(__dirname, "dist"),
-        filename: "bundle.js",
+        filename: "[name][hash].js",
         publicPath: "/"
     },
     module: {
@@ -25,18 +28,21 @@ const config: webpack.Configuration = {
                 loader: "source-map-loader"
             },
             {
+                test: /\.css$/,
+                use: ExtractTextPlugin.extract({
+                    fallback: "style-loader",
+                    use: "css-loader"
+                })
+            },
+            {
                 test: /\.less$/,
-                use: [
-                    {
-                        loader: "style-loader"
-                    },
-                    {
-                        loader: "css-loader"
-                    },
-                    {
-                        loader: "less-loader"
-                    }
-                ],
+                use: ExtractTextPlugin.extract({
+                    fallback: 'style-loader',
+                    use: [
+                        {loader: "css-loader"},
+                        {loader: "less-loader"}
+                    ],
+                })
             }
         ]
     },
@@ -71,24 +77,13 @@ const config: webpack.Configuration = {
     },
     stats: "errors-only",
     devServer: {
-        // contentBase: path.join(__dirname, 'node_modules'), // boolean | string | array, static file location
-        compress: true, // enable gzip compression
-        // historyApiFallback: true, // true for index.html upon 404, object for multiple paths
-        hot: true, // hot module replacement. Depends on HotModuleReplacementPlugin
-        https: false, // true for self-signed, object for cert authority
-        noInfo: true, // only errors & warns on hot reload
+        compress: true,
+        hot: true,
+        https: false,
+        noInfo: true,
     },
 
-    plugins: [
-        new HtmlWebpackPlugin({
-            title: 'My React App',
-            filename: 'src/App.html'
-        }),
-        new webpack.optimize.CommonsChunkPlugin({
-            name: "vendors",
-            filename: "vendors.js",
-        })
-    ]
+    plugins: getPlugins(env)
 };
 
 export default config;

@@ -1,6 +1,8 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
+import './App.less';
+
 import { Hello } from "./app/components/Hello";
 
 ReactDOM.render(
